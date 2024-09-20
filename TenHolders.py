@@ -9,7 +9,8 @@ import pandas as pd
 import requests
 import os
 import re
-import matplotlib.pyplot as plt  
+import matplotlib.pyplot as plt
+#import matplotlib.dates as mdates
 # 支持中文
 plt.rcParams['font.sans-serif'] = ['Microsoft YaHei']
 
@@ -123,6 +124,10 @@ class TopTheHoldingV2:
         for holder, idx in holder_dict.items():
             holder_data = df_filtered[df_filtered['持有人'] == holder]
             plt.plot(holder_data['公布日期'], holder_data['持有比例'], label=f'{idx}: {holder}')
+            
+            # 设置日期格式和刻度
+            #plt.gca().xaxis.set_major_locator(mdates.DayLocator(interval=90))
+            #plt.gca().xaxis.set_major_formatter(mdates.DateFormatter('%Y-%m-%d'))
             
             # 在曲线的最后一个数据点上标注编号
             last_date = holder_data['公布日期'].iloc[0]
