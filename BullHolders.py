@@ -11,6 +11,9 @@ import os
 import re
 import matplotlib.pyplot as plt
 #import matplotlib.dates as mdates
+import networkx as nx
+import matplotlib.pyplot as plt
+import numpy as np
 # 支持中文
 plt.rcParams['font.sans-serif'] = ['Microsoft YaHei']
 
@@ -38,6 +41,87 @@ class BullHolding:
         if re.search('社保',x):
             return '社保'
         return '公募'
+        
+
+    def figure_network(self, bullholders_df):
+        G = nx.Graph()
+    
+        # 添加节点和边
+        for index, row in bullholders_df.iterrows():
+            bond = row['BOND_NAME_ABBR']
+            holder = row['HOLDER_NAME']
+    
+            # 添加节点
+            if bond not in G.nodes():
+                G.add_node(bond, shape='s')  # 方形节点
+            if holder not in G.nodes():
+                G.add_node(holder, shape='o')  # 圆形节点
+    
+            # 添加边
+            G.add_edge(bond, holder)
+    
+        # 找到度小于2的持有人点并移除
+        holder_nodes = [node for node in G.nodes() if G.nodes[node].get('shape') == 'o']
+        holder_nodes_to_remove = [node for node in holder_nodes if G.degree(node) < 2]
+        G.remove_nodes_from(holder_nodes_to_remove)
+        
+        # 找到度等于0的债券节点并移除
+        bond_nodes = [node for node in G.nodes() if G.nodes[node].get('shape') == 's']
+        bond_nodes_to_remove = [node for node in bond_nodes if G.degree(node) < 1]
+        G.remove_nodes_from(bond_nodes_to_remove)
+    
+        # 使用 spring 布局
+        #pos = nx.spring_layout(G)
+        #pos = nx.circular_layout(G)
+        #pos = nx.random_layout(G)
+
+        
+        #外圈位置布局均匀分布角度
+        bond_nodes = [node for node in G.nodes() if G.nodes[node].get('shape') == 's']
+        num_bonds = len(bond_nodes);out_radius = 400
+        bond_theta = np.linspace(0, 2*np.pi, num_bonds, endpoint=False)
+        print(bond_theta,num_bonds)
+        bond_pos = {bond_nodes[i]: (out_radius * np.cos(bond_theta[i]), out_radius * np.sin(bond_theta[i])) for i in range(num_bonds)}
+ 
+
+        
+        #内圈位置布局均匀分布角度
+        holder_nodes = [node for node in G.nodes() if G.nodes[node].get('shape') == 'o']
+        num_holders = len(holder_nodes);inner_radius = 200
+        theta = np.linspace(0, 2*np.pi, num_holders, endpoint=False)
+        print(theta,num_holders)
+        holder_pos = {holder_nodes[i]: (inner_radius * np.cos(theta[i]), inner_radius * np.sin(theta[i])) for i in range(num_holders)}
+        
+        pos = {**bond_pos, **holder_pos}
+    
+        # 绘制边
+        nx.draw_networkx_edges(G, pos, width=2, alpha=0.5)
+    
+        # 绘制节点标签,创建一个字典，将节点映射到其名称
+        #labels = {node: node for node in G.nodes()} 
+        #print(labels)
+        labels = {node:  node[:2] if '转债' in node else node for node in G.nodes()}
+        
+        nx.draw_networkx_labels(G, pos, labels=labels, font_size=10, font_color='darkred')
+    
+        # 分开处理方形节点和圆形节点
+        bond_nodes = [node for node in G.nodes() if G.nodes[node].get('shape') == 's']
+        holder_nodes = [node for node in G.nodes() if G.nodes[node].get('shape') == 'o']
+    
+        # 调整节点大小
+        node_size = 700
+        # 绘制方形节点
+        nx.draw_networkx_nodes(G, pos, nodelist=bond_nodes, node_color='skyblue', node_shape='s', node_size=node_size)
+    
+        # 绘制剩余的圆形节点
+        nx.draw_networkx_nodes(G, pos, nodelist=holder_nodes, node_color='lightgreen', node_shape='o', node_size=node_size)
+    
+        # 显示图
+        #plt.axis('off')
+        #figurepath = f'./holders_network.png'
+        #plt.savefig(figurepath) 
+        plt.show()
+
         
     def group_holders(self,bullholders_df):
         #按照'HOLDER_NAME'进行分组，并将每个组的'BOND_NAME_ABBR'聚合成一个列表
@@ -91,6 +175,7 @@ class BullHolding:
                 current_df.loc[:, 'CATEGORY'] = current_df['HOLDER_NAME'].map(self.category)
                 bullholders_df =  current_df[current_df['CATEGORY'] == '个人' ]
                 
+                self.figure_network(bullholders_df)
                 self.group_holders(bullholders_df)
                 self.group_bonds(bullholders_df)
                 
