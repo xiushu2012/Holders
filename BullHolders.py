@@ -107,6 +107,7 @@ class BullHolding:
         # 分开处理方形节点和圆形节点
         bond_nodes = [node for node in G.nodes() if G.nodes[node].get('shape') == 's']
         holder_nodes = [node for node in G.nodes() if G.nodes[node].get('shape') == 'o']
+
     
         # 调整节点大小
         node_size = 700
@@ -115,16 +116,20 @@ class BullHolding:
     
         # 绘制剩余的圆形节点
         nx.draw_networkx_nodes(G, pos, nodelist=holder_nodes, node_color='lightgreen', node_shape='o', node_size=node_size)
+       
     
         # 显示图
         #plt.axis('off')
         #figurepath = f'./holders_network.png'
         #plt.savefig(figurepath) 
         plt.show()
+        #返回关键持有人
+        return holder_nodes
 
         
-    def group_holders(self,bullholders_df):
+    def group_holders(self,bullholders_df,key_holders):
         #按照'HOLDER_NAME'进行分组，并将每个组的'BOND_NAME_ABBR'聚合成一个列表
+        bullholders_df['HOLDER_NAME']=bullholders_df['HOLDER_NAME'].apply(lambda x: f'*{x}' if x in key_holders else x)
         grouped_bullholders = bullholders_df.groupby('HOLDER_NAME')['BOND_NAME_ABBR'].apply(list)
 
 
@@ -138,8 +143,9 @@ class BullHolding:
         output_filename = self.filename.replace('fetch','fetch-hold')
         grouped_bullholders_df.to_excel(output_filename, index=False, engine='openpyxl')
         
-    def group_bonds(self,bullholders_df):
+    def group_bonds(self,bullholders_df,key_holders):
         #按照'BOND_NAME_ABBR'进行分组，并将每个组的'HOLDER_NAME'聚合成一个列表
+        bullholders_df['HOLDER_NAME']=bullholders_df['HOLDER_NAME'].apply(lambda x: f'*{x}' if x in key_holders else x)
         grouped_bullholders = bullholders_df.groupby('BOND_NAME_ABBR')['HOLDER_NAME'].apply(list)
 
 
@@ -148,6 +154,7 @@ class BullHolding:
         grouped_bullholders_df['HOLDER_COUNT'] = grouped_bullholders_df['HOLDER_NAME'].apply(len)
         grouped_bullholders_df = grouped_bullholders_df.sort_values(by='HOLDER_COUNT', ascending=False)
         grouped_bullholders_df.reset_index(drop=True, inplace=True)
+        
                 
         print(grouped_bullholders_df)
         output_filename = self.filename.replace('fetch','fetch-bond')
@@ -175,9 +182,11 @@ class BullHolding:
                 current_df.loc[:, 'CATEGORY'] = current_df['HOLDER_NAME'].map(self.category)
                 bullholders_df =  current_df[current_df['CATEGORY'] == '个人' ]
                 
-                self.figure_network(bullholders_df)
-                self.group_holders(bullholders_df)
-                self.group_bonds(bullholders_df)
+                #返回关键持有人并在分析结果中标注
+                key_holders = self.figure_network(bullholders_df)
+                print(f'关键持有人:{key_holders}')
+                self.group_holders(bullholders_df,key_holders)
+                self.group_bonds(bullholders_df,key_holders)
                 
         except FileNotFoundError:
             print("Error while reading Excel file.")
