@@ -21,9 +21,11 @@ class TopTheHoldingV2:
         selected_df = pd.read_excel(selected)
         print(selected_df)
         self.jsl_data = [(str(code)[2:],name) for code,name in zip(selected_df['code'], selected_df['name'])]
-        self.mapper_list =['林园','宁泉','甄投','明汯','汇添富','博时',
-                     '易方达','全国社保','兴全','东方红','南方东英','嘉实','富国','天弘',
-                     '光大保德','诺安','中欧','中邮','上海迎水','广发','鹏华','上海泉汐','上海睿郡']
+        self.keyholder_list = ['睿郡','合晟','迎水','宁泉','林园','明汯','兴全','九坤',
+                              '崔凯', '李怡名', '丁碧霞', '李裕婷', '张洪西', 
+                              '张鹏', '阮美娟', '苑志华', '宋爱国', '朱军', 
+                              '陈晓红', '蔡子跃', '吴菊香', '杜荣河', '李秀娟', 
+                              '曹卫宏', '黄巍然', '胡涛', '崔清建']
 
     @property
     def headers(self):
@@ -96,7 +98,7 @@ class TopTheHoldingV2:
     def map_short_name(self,x):
         if len(x)<5:
             return x
-        for i in self.mapper_list:
+        for i in self.keyholder_list:
             if re.search(i,x):
                 return i
         return x
@@ -108,12 +110,17 @@ class TopTheHoldingV2:
             print("create figure folder:%s create" % (folder))
                                   
         df['公布日期'] = pd.to_datetime(df['公布日期'])
-        #df['持有人']=df['持有人'].map(self.map_short_name)
+       
         
-        #这块存在持有人过多几乎无法分清....
-        values_to_match = ['合计', '银行','证券','基金','UBS','有限公司','信托']
-        pattern = '|'.join(values_to_match)
-        df_filtered  = df[~(df['持有人'].str.contains(pattern, regex=True, case=False))]
+        #这块存在持有人过多几乎无法分清
+        #values_to_match = ['合计', '银行','证券','基金','UBS','有限公司','信托']
+        #pattern = '|'.join(values_to_match)
+        #df_filtered  = df[~(df['持有人'].str.contains(pattern, regex=True, case=False))]
+        
+        #按照重点持有人过滤
+        pattern = '|'.join(self.keyholder_list)
+        df_filtered  = df[(df['持有人'].str.contains(pattern, regex=True, case=False))]
+        df_filtered['持有人']=df_filtered['持有人'].map(self.map_short_name)
         plt.figure(figsize=(10, 6))                                                 
         
         #获取唯一持有人列表并为每个持有人分配一个编号
