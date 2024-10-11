@@ -206,7 +206,7 @@ def main(code=None):
     if len(argv) > 1:
         filein = argv[1]
     else:
-        print("please run like 'python BullHolders.py [file]'")
+        print("please run like 'python NetHolders.py [fetch-2024-10-10.xlsx]'")
         exit(1)
     timepoint = '2024-06-30'
     app = BullHolding(filein,timepoint)

@@ -120,6 +120,9 @@ class TopTheHoldingV2:
         #按照重点持有人过滤
         pattern = '|'.join(self.keyholder_list)
         df_filtered  = df[(df['持有人'].str.contains(pattern, regex=True, case=False))]
+        if df_filtered.empty:
+            return
+        
         df_filtered['持有人']=df_filtered['持有人'].map(self.map_short_name)
         plt.figure(figsize=(10, 6))                                                 
         
@@ -169,7 +172,7 @@ def main(code=None):
     if len(argv) > 1:
         filein = argv[1]
     else:
-        print("please run like 'python redeem.py [file]'")
+        print("please run like 'python TenHolders.py [selected.xlsx]'")
         exit(1)
     app = TopTheHoldingV2(filein)
     app.run()  
