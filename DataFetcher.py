@@ -98,7 +98,7 @@ def main(code=None):
     if len(argv) > 1:
         filein = argv[1]
     else:
-        print("please run like 'python redeem.py [file]'")
+        print("please run like 'python DataFetcher.py [selected.xlsx]'")
         exit(1)
     app = TopTheHoldingV2(filein)
     app.run()  
