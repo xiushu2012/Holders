@@ -59,8 +59,7 @@ class TopTheHoldingV2:
             print(f'crawling {code}:{name}')
             js = self.crawl(code)
             result_list = self.parse_json(js)
-            self.dump_excel(result_list, name) 
-
+            self.dump_excel(result_list, name)             
 
     def dump_excel(self,result_list, name):
         if len(result_list) == 0:
@@ -89,6 +88,8 @@ class TopTheHoldingV2:
                 with pd.ExcelWriter(filename, engine='openpyxl', mode='w') as writer:
                     combined_df.to_excel(writer, sheet_name='holders', index=False)            
             print(f'Excel file "{filename}" exported successfully with data for bond {name}.')
+        except openpyxl.utils.exceptions.IllegalCharacterError as e:
+            print(f"Can not write to Excel：IllegalCharacterError")
         except FileNotFoundError:
             print("Error while writing to Excel file.")
 
