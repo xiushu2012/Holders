@@ -152,7 +152,9 @@ class BullHolding:
         # 将聚合结果转换为DataFrame
         grouped_bullholders_df = grouped_bullholders.reset_index()
         grouped_bullholders_df['HOLDER_COUNT'] = grouped_bullholders_df['HOLDER_NAME'].apply(len)
-        grouped_bullholders_df = grouped_bullholders_df.sort_values(by='HOLDER_COUNT', ascending=False)
+        grouped_bullholders_df['STAR_COUNT'] = grouped_bullholders_df['HOLDER_NAME'].apply(lambda x: len([i for i in x if i.startswith('*')]))
+        
+        grouped_bullholders_df = grouped_bullholders_df.sort_values(by='STAR_COUNT', ascending=False)
         grouped_bullholders_df.reset_index(drop=True, inplace=True)
         
                 

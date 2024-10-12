@@ -21,11 +21,24 @@ class TopTheHoldingV2:
         selected_df = pd.read_excel(selected)
         print(selected_df)
         self.jsl_data = [(str(code)[2:],name) for code,name in zip(selected_df['code'], selected_df['name'])]
+        #self.keyholder_list = ['睿郡','合晟','迎水','宁泉','林园','明汯','兴全','九坤',
+        #                      '崔凯', '李怡名', '丁碧霞', '李裕婷', '张洪西', 
+        #                      '张鹏', '阮美娟', '苑志华', '宋爱国', '朱军', 
+        #                      '陈晓红', '蔡子跃', '吴菊香', '杜荣河', '李秀娟', 
+        #                      '曹卫宏', '黄巍然', '胡涛', '崔清建']
         self.keyholder_list = ['睿郡','合晟','迎水','宁泉','林园','明汯','兴全','九坤',
-                              '崔凯', '李怡名', '丁碧霞', '李裕婷', '张洪西', 
-                              '张鹏', '阮美娟', '苑志华', '宋爱国', '朱军', 
-                              '陈晓红', '蔡子跃', '吴菊香', '杜荣河', '李秀娟', 
-                              '曹卫宏', '黄巍然', '胡涛', '崔清建']
+                               '钟宝申', '苏晓红', '张韵秋', '崔凯', '陈晓红', 
+                               '李怡名', '丁碧霞', '张鹏', '李裕婷', '李素珍', 
+                               '朱军', '吴菊香', '李江', '曾毅', '冯民', '曹卫宏', 
+                               '蔡子跃', '李雪虹', '朱广超', '罗运生', '孙彦', 
+                               '宋爱国', '阮美娟', '嵇方一', '黄巍然', '汪小清',
+                               '孙天辉', '李金华', '姜炎昌', '肖金泰', '李秀娟',
+                               '王静', '李博', '曹建帮', '钟飞宇', '张敦强',
+                               '杜荣河', '刘金茂', '方微', '项光明', '朱善玉', 
+                               '朱善银', '苑志华', '张洪西', '胡涛', '崔清建', 
+                               '李悦', '魏文晔', '郑步翠', '黄永山', '舒逸民', 
+                               '钱伟冬', '陆阿兰', '吴樟荣', '黄晓明', '邓玉美',
+                               '王玥', '高峰', '黄世新', '彭灵美', '张蕾']
 
     @property
     def headers(self):
@@ -73,7 +86,7 @@ class TopTheHoldingV2:
 
     def dump_excel(self,result_list, name):
         if len(result_list) == 0:
-            print('empty')
+            print('Get empty result_list to dump')
             return
 
         df = pd.DataFrame(result_list)
@@ -94,6 +107,8 @@ class TopTheHoldingV2:
             print(f'Excel file "{filename}" exported successfully with data for bond {name}.')
         except FileNotFoundError:
             print("Error while writing to Excel file.")
+        except openpyxl.utils.exceptions.IllegalCharacterError as e:
+            print(f"Can not write to Excel：IllegalCharacterError")
 
     def map_short_name(self,x):
         if len(x)<5:
@@ -107,7 +122,7 @@ class TopTheHoldingV2:
         isExist = os.path.exists(folder)
         if not isExist:
             os.makedirs(folder)
-            print("create figure folder:%s create" % (folder))
+            print("Create figure folder:%s create" % (folder))
                                   
         df['公布日期'] = pd.to_datetime(df['公布日期'])
        
@@ -121,6 +136,7 @@ class TopTheHoldingV2:
         pattern = '|'.join(self.keyholder_list)
         df_filtered  = df[(df['持有人'].str.contains(pattern, regex=True, case=False))]
         if df_filtered.empty:
+            print('Get empty important holders')
             return
         
         df_filtered['持有人']=df_filtered['持有人'].map(self.map_short_name)
