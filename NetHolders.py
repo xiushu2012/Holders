@@ -1,5 +1,5 @@
 ﻿# -*- coding: utf-8 -*-
-import datetime
+from datetime import datetime, timedelta
 import random
 import sys
 import time
@@ -14,13 +14,14 @@ import matplotlib.pyplot as plt
 import networkx as nx
 import matplotlib.pyplot as plt
 import numpy as np
+
 # 支持中文
 plt.rcParams['font.sans-serif'] = ['Microsoft YaHei']
 
 class BullHolding:
 
     def __init__(self,selected,timepoint):
-        self.today = datetime.datetime.today().strftime('%Y-%m-%d')
+        self.today = datetime.today().strftime('%Y-%m-%d')
         self.filename = selected
         self.current = timepoint
         self.mapper_list =['林园','宁泉','甄投','明汯','汇添富','博时',
@@ -202,6 +203,21 @@ class BullHolding:
         return x
 
 
+def find_closest_date(current_date_str):
+    current_date = datetime.strptime(current_date_str, '%Y-%m-%d')
+    
+    # 找到当年的'06-30'日期
+    jun_30 = datetime(current_date.year, 6, 30)
+    
+    # 找到上一年的'12-31'日期
+    dec_31_last_year = datetime(current_date.year - 1, 12, 31)
+    
+    # 如果当前日期小于当年的'06-30'，则选择上一年的'12-31'
+    if current_date < jun_30:
+        return dec_31_last_year
+    else:
+        return jun_30
+
 def main(code=None):
     from sys import argv
     filein = ""
@@ -210,7 +226,12 @@ def main(code=None):
     else:
         print("please run like 'python NetHolders.py [fetch-2024-10-10.xlsx]'")
         exit(1)
-    timepoint = '2024-06-30'
+
+    # 找到最近的截止日期
+    current_date_str = datetime.today().strftime('%Y-%m-%d')
+    timepoint = find_closest_date(current_date_str)
+    print(f"Timepoint is {timepoint}")
+    
     app = BullHolding(filein,timepoint)
     app.run()  
 if __name__ == '__main__':
