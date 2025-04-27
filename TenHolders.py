@@ -91,6 +91,7 @@ class TopTheHoldingV2:
 
         df = pd.DataFrame(result_list)
         df = df[['BOND_NAME_ABBR', 'SECUCODE', 'END_DATE', 'HOLDER_NAME', 'HOLD_NUM', 'HOLD_RATIO', 'HOLDER_RANK']]
+        df = df.sort_values(by='END_DATE', ascending=True)
         df.columns = ['转债名称', '转债代码', '公布日期', '持有人', '持有张数', '持有比例', '排名']
 
 

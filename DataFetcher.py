@@ -68,6 +68,7 @@ class TopTheHoldingV2:
 
         df = pd.DataFrame(result_list)
         df = df[['BOND_NAME_ABBR', 'SECUCODE', 'END_DATE', 'HOLDER_NAME', 'HOLD_NUM', 'HOLD_RATIO', 'HOLDER_RANK']]
+        df = df.sort_values(by='END_DATE', ascending=True)
 
 
         filename = f'fetch-{self.today}.xlsx'
